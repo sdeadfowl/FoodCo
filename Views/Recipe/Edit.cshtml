@@ -1,0 +1,434 @@
+﻿@model FoodCo.Models.Recipe
+
+@{
+    ViewBag.Title = "Modification de recette";
+    Layout = "~/Views/Shared/_LoggedInLayout.cshtml";
+}
+<header class="main-header">
+    <button class="icon-button icon fa fa-arrow-left" onclick="window.history.back()"><span class="icon"></span></button>
+    <div class="main-header-content">
+        <h1 class="section-title">@ViewBag.Title</h1>
+    </div>
+    <button class="icon-button u-margin-start-auto" aria-label="Top foodcos on"><span class="icon">✨</span></button>
+</header>
+<br />
+<div class="recipe-form-container">
+    <section class="recipe-form">
+        @using (Html.BeginForm("Edit", "Recipe", FormMethod.Post, new { id = "recipeForm", enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="step-indicator">
+                <div class="step active">Informations</div>
+                <div class="step">Ingrédients</div>
+                <div class="step">Étapes</div>
+                <div class="step">Publier</div>
+            </div>
+
+            //Step #1
+            <div class="form-step" id="step-1">
+                <h2 class="step-title">Informations de base 📝</h2>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Name, "Nom de la recette", htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", required = "required", placeholder = "Ex: Tarte aux pommes" } })
+                    @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ContentPath, "Importer un fichier", htmlAttributes: new { @class = "control-label" })
+
+                    @if (!string.IsNullOrEmpty(Model.ContentPath))
+                    {
+                        var extension = Path.GetExtension(Model.ContentPath).ToLower();
+
+                        if (extension == ".jpg" || extension == ".jpeg" || extension == ".png" || extension == ".gif")
+                        {
+                            <div>
+                                <img src="@Url.Content(Model.ContentPath)" alt="Image actuelle" class="content-image" id="currentImage" style="max-width: 200px; max-height: 200px;" />
+                            </div>
+                        }
+                        else if (extension == ".mp4" || extension == ".avi" || extension == ".mov" || extension == ".webm")
+                        {
+                            <div>
+                                <label>Vidéo actuelle :</label>
+                                <video id="currentVideo" class="content-video" controls>
+                                    <source src="@Url.Content(Model.ContentPath)" type="video/@extension.Substring(1)">
+                                </video>
+                            </div>
+                        }
+                    }
+
+                    <video id="videoPreview" class="content-video" controls style="display:none;">
+                        Votre navigateur ne supporte pas la lecture vidéo.
+                    </video>
+
+                    <img id="imagePreview" class="content-image" style="display:none;" />
+
+                    <div class="file-upload">
+                        <label class="btn btn-file pointer">
+                            Choisir un fichier
+                            <input type="file" name="ImageFile" class="form-control" onchange="previewMedia(event)" accept="image/jpeg, image/png, image/gif, video/mp4, video/avi, video/quicktime, video/webm" />
+
+                        </label>
+                        <span class="file-selected-info">Aucun fichier sélectionné</span>
+                    </div>
+                    @Html.ValidationMessage("ImageFile", "", new { @class = "text-danger" })
+                </div>
+
+
+
+
+
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Description, "Description de la recette", htmlAttributes: new { @class = "control-label" })
+                    <div class="description-box-content">
+                        @Html.TextAreaFor(model => model.Description, new
+                        {
+                            @class = "description-box-text-area",
+                            placeholder = "Décrivez votre délicieuse recette ici...",
+                            required = "required",
+                            rows = "4",
+                            cols = "20"
+                        })
+
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="recipe-nav-btn">
+                    <button type="button" class="btn btn-next" onclick="nextStep(1)">Suivant</button>
+                </div>
+            </div>
+
+            // Step #2 (Ingredients)
+            <div class="form-step" id="step-2" style="display:none;">
+                <h2 class="step-title">Ingrédients 🥕</h2>
+                <div id="ingredient-list">
+                    @{
+                        int ingredientIndex = 0;
+                    }
+                    @foreach (var ingredient in Model.Ingredients)
+                    {
+                        <div class="ingredient-item">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="Nom de l'ingrédient" name="Ingredients[@ingredientIndex].Name" value="@ingredient.Name" required />
+                                <input type="number" class="form-control" placeholder="Quantité" name="Ingredients[@ingredientIndex].Quantity" value="@ingredient.Quantity" required />
+                                <select class="form-control" name="Ingredients[@ingredientIndex].Measurements" required>
+                                    <option value="" disabled>Choisir une unité de mesure</option>
+                                    <option value="unit" @(ingredient.Measurements == "unit" ? "selected" : "")>unité(s)</option>
+                                    <option value="g" @(ingredient.Measurements == "g" ? "selected" : "")>grammes</option>
+                                    <option value="kg" @(ingredient.Measurements == "kg" ? "selected" : "")>kilogrammes</option>
+                                    <option value="ml" @(ingredient.Measurements == "ml" ? "selected" : "")>millilitres</option>
+                                    <option value="l" @(ingredient.Measurements == "l" ? "selected" : "")>litres</option>
+                                    <option value="cup" @(ingredient.Measurements == "cup" ? "selected" : "")>tasses</option>
+                                    <option value="tbsp" @(ingredient.Measurements == "tbsp" ? "selected" : "")>cuillères à soupe</option>
+                                    <option value="tsp" @(ingredient.Measurements == "tsp" ? "selected" : "")>cuillères à café</option>
+                                </select>
+                                <button type="button" class="btn btn-danger" onclick="removeIngredient(this)">Retirer</button>
+                            </div>
+                        </div>
+                        ingredientIndex++;
+                    }
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-add" onclick="addIngredient()">Ajouter un ingrédient</button>
+                </div>
+
+                <div class="recipe-nav-btn">
+                    <button type="button" class="btn btn-back" onclick="prevStep(2)">Précédent</button>
+                    <button type="button" class="btn btn-next" onclick="nextStep(2)">Suivant</button>
+                </div>
+            </div>
+
+
+            // Step #3 (Recipe Steps)
+            <div class="form-step" id="step-3" style="display:none;">
+                <h2 class="step-title">Étapes de la recette 👩‍🍳</h2>
+                <div id="step-list">
+                    @{
+                        int stepIndex = 0;
+                    }
+                    @foreach (var step in Model.RecipeSteps)
+                    {
+                        <div class="step-item">
+                            <div class="form-group">
+                                <div class="step-container" style="display: flex; align-items: center;">
+                                    <span class="step-number" style="margin-right: 10px;">@(stepIndex + 1).</span>
+                                    <input type="text" class="form-control" placeholder="Description de l'étape" name="RecipeSteps[@stepIndex].Description" value="@step.Description" required />
+                                    <button type="button" class="btn btn-danger" onclick="removeStep(this)" style="margin-top: 0; margin-left: 10px;">
+                                        <span class="icon">
+                                            <i class="fas fa-trash"></i>
+                                        </span>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="RecipeSteps[@stepIndex].StepNumber" value="@(stepIndex + 1)" />
+                            </div>
+                        </div>
+                        stepIndex++;
+                    }
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-add" onclick="addStep()">Ajouter une étape</button>
+                </div>
+                <div class="recipe-nav-btn">
+                    <button type="button" class="btn btn-back" onclick="prevStep(3)">Précédent</button>
+                    <button type="button" class="btn btn-next" onclick="nextStep(3)">Suivant</button>
+                </div>
+            </div>
+
+
+
+            // Step #4 (final)
+            <div class="form-step" id="step-4" style="display:none;">
+                <h2 class="step-title">Soumettez votre recette ✨</h2>
+                <div class="form-group">
+                    @Html.Label("Étiquette", htmlAttributes: new { @class = "control-label" })
+                    <select class="form-control" name="Tag" required>
+                        <option value="" disabled @(string.IsNullOrEmpty(Model.Tag) ? "selected" : "") style="color: #999;">
+                            Choisir une étiquette
+                        </option>
+                        <option value="bbq" @(Model.Tag == "bbq" ? "selected" : "")>BBQ 🍖</option>
+                        <option value="québécois" @(Model.Tag == "québécois" ? "selected" : "")>Québécois 🍁</option>
+                        <option value="canard" @(Model.Tag == "canard" ? "selected" : "")>Canard 🦆</option>
+                        <option value="boeuf" @(Model.Tag == "boeuf" ? "selected" : "")>Boeuf 🥩</option>
+                        <option value="végétarien" @(Model.Tag == "végétarien" ? "selected" : "")>Végétarien 🥗</option>
+                        <option value="poulet" @(Model.Tag == "poulet" ? "selected" : "")>Poulet 🍗</option>
+                        <option value="poisson" @(Model.Tag == "poisson" ? "selected" : "")>Poisson 🐟</option>
+                        <option value="dessert" @(Model.Tag == "dessert" ? "selected" : "")>Dessert 🍰</option>
+                        <option value="italien" @(Model.Tag == "italien" ? "selected" : "")>Italien 🍝</option>
+                        <option value="mexicain" @(Model.Tag == "mexicain" ? "selected" : "")>Mexicain 🌮</option>
+                        <option value="asiatique" @(Model.Tag == "asiatique" ? "selected" : "")>Asiatique 🍜</option>
+                        <option value="indien" @(Model.Tag == "indien" ? "selected" : "")>Indien 🍛</option>
+                        <option value="méditerranéen" @(Model.Tag == "méditerranéen" ? "selected" : "")>Méditerranéen 🌊</option>
+                        <option value="fruits de mer" @(Model.Tag == "fruits de mer" ? "selected" : "")>Fruits de mer 🦐</option>
+                        <option value="soupe" @(Model.Tag == "soupe" ? "selected" : "")>Soupe 🍲</option>
+                        <option value="salade" @(Model.Tag == "salade" ? "selected" : "")>Salade 🥗</option>
+                        <option value="sandwich" @(Model.Tag == "sandwich" ? "selected" : "")>Sandwich 🥪</option>
+                        <option value="brunch" @(Model.Tag == "brunch" ? "selected" : "")>Brunch 🥞</option>
+                    </select>
+                    <small class="form-text text-muted">Exemples: bbq, québécois, canard, boeuf.</small>
+                </div>
+
+                <div class="recipe-nav-btn">
+                    <button type="button" class="btn btn-back" onclick="prevStep(4)">Précédent</button>
+                    <input type="submit" value="Modifier" class="btn btn-success pointer" onclick="return validateStep(4);" />
+                </div>
+            </div>
+
+        }
+    </section>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        var ingredientIndex = 1;
+        var stepIndex = 1;
+
+        function nextStep(step) {
+            if (!validateStep(step)) return;
+
+            var currentStep = document.getElementById('step-' + step);
+            currentStep.style.display = 'none';
+            var nextStep = document.getElementById('step-' + (step + 1));
+            nextStep.style.display = 'block';
+
+            updateStepIndicator(step + 1);
+        }
+
+        function prevStep(step) {
+            var currentStep = document.getElementById('step-' + step);
+            currentStep.style.display = 'none';
+            var prevStep = document.getElementById('step-' + (step - 1));
+            prevStep.style.display = 'block';
+
+            updateStepIndicator(step - 1);
+        }
+        document.querySelector('input[type="file"]').addEventListener('change', function (e) {
+            var fileName = e.target.files.length > 0 ? e.target.files[0].name : 'Aucun fichier sélectionné';
+            document.querySelector('.file-selected-info').textContent = fileName;
+
+            previewMedia(e);
+        });
+
+        function previewMedia(event) {
+            var file = event.target.files[0];
+            var fileType = file.type;
+
+            var outputImage = document.getElementById('imagePreview');
+            var outputVideo = document.getElementById('videoPreview');
+            var currentImage = document.getElementById('currentImage');
+            var currentVideo = document.getElementById('currentVideo');
+
+            if (file) {
+                if (fileType.startsWith('image/')) {
+                    outputImage.src = URL.createObjectURL(file);
+                    outputImage.style.display = 'block';
+                    outputVideo.style.display = 'none';
+
+                    if (currentImage) {
+                        currentImage.style.display = 'none';
+                    }
+                    if (currentVideo) {
+                        currentVideo.style.display = 'none';
+                    }
+
+                    outputImage.onload = function () {
+                        URL.revokeObjectURL(outputImage.src);
+                    };
+                }
+                else if (fileType.startsWith('video/')) {
+                    outputVideo.src = URL.createObjectURL(file);
+                    outputVideo.style.display = 'block';
+                    outputImage.style.display = 'none';
+
+                    if (currentVideo) {
+                        currentVideo.style.display = 'none';
+                    }
+                    if (currentImage) {
+                        currentImage.style.display = 'none';
+                    }
+
+                    outputVideo.onload = function () {
+                        URL.revokeObjectURL(outputVideo.src);
+                    };
+                }
+            }
+        }
+
+
+
+
+
+        function validateStep(step) {
+            var valid = true;
+            var inputs = document.querySelectorAll('#step-' + step + ' input[required], #step-' + step + ' select[required], #step-' + step + ' textarea[required]');
+
+            inputs.forEach(function (input) {
+                if (input.type === "file") {
+                    var file = input.files[0];
+                    if (!file) {
+                        valid = false;
+                        input.classList.add('is-invalid');
+                    } else {
+                        var validFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/avi', 'video/quicktime'];
+                        if (!validFileTypes.includes(file.type)) {
+                            valid = false;
+                            input.classList.add('is-invalid');
+                            var errorMessage = input.nextElementSibling;
+                            if (errorMessage && errorMessage.classList.contains('text-danger')) {
+                                errorMessage.textContent = "Le fichier doit être une image (jpg, png, gif) ou une vidéo (mp4, avi, mov).";
+                            }
+                        } else {
+                            input.classList.remove('is-invalid');
+                            var errorMessage = input.nextElementSibling;
+                            if (errorMessage && errorMessage.classList.contains('text-danger')) {
+                                errorMessage.textContent = "";
+                            }
+                        }
+                    }
+                } else {
+                    if (!input.value.trim()) {
+                        valid = false;
+                        input.classList.add('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                }
+            });
+
+            return valid;
+        }
+
+        function updateStepIndicator(step) {
+            var steps = document.querySelectorAll('.step');
+            steps.forEach(function (s, index) {
+                s.classList.remove('active');
+                if (index + 1 === step) {
+                    s.classList.add('active');
+                }
+            });
+        }
+        function addIngredient() {
+            var ingredientIndex = @Model.Ingredients.Count() ;
+            var ingredientList = document.getElementById('ingredient-list');
+            var newIngredient = document.createElement('div');
+            newIngredient.className = 'ingredient-item';
+            newIngredient.innerHTML = `
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Nom de l'ingrédient" name="Ingredients[${ingredientIndex}].Name" required />
+                    <input type="number" class="form-control" placeholder="Quantité" name="Ingredients[${ingredientIndex}].Quantity" required />
+                    <select class="form-control" name="Ingredients[${ingredientIndex}].Measurements" required>
+                        <option value="" disabled selected style="color: #999;">
+                            Choisir une unité de mesure
+                        </option>
+                        <option value="unit">unité(s)</option>
+                        <option value="g">grammes</option>
+                        <option value="kg">kilogrammes</option>
+                        <option value="ml">millilitres</option>
+                        <option value="l">litres</option>
+                        <option value="cup">tasses</option>
+                        <option value="tbsp">cuillères à soupe</option>
+                        <option value="tsp">cuillères à café</option>
+                    </select>
+                    <button type="button" class="btn btn-danger" onclick="removeIngredient(this)">Retirer</button>
+                </div>`;
+            ingredientList.appendChild(newIngredient);
+            ingredientIndex++;
+        }
+
+        function removeIngredient(button) {
+            button.closest('.ingredient-item').remove();
+            var ingredients = document.querySelectorAll('.ingredient-item');
+            ingredients.forEach((ingredient, index) => {
+                ingredient.querySelector('input[name^="Ingredients"]').name = `Ingredients[${index}].Name`;
+                ingredient.querySelector('input[type="number"]').name = `Ingredients[${index}].Quantity`;
+                ingredient.querySelector('select').name = `Ingredients[${index}].Measurements`;
+            });
+        }
+
+        function addStep() {
+            var stepIndex = @Model.RecipeSteps.Count();
+            var stepList = document.getElementById('step-list');
+            var newStep = document.createElement('div');
+            newStep.className = 'step-item';
+            newStep.innerHTML = `
+                                                <div class="form-group">
+                                                <div class="step-container" style="display: flex; align-items: center;">
+                                                  <span class="step-number" style="margin-right: 10px;">${stepIndex + 1}.</span>
+                                                    <input type="text" class="form-control" placeholder="Description de l'étape" name="RecipeSteps[${stepIndex}].Description" required />
+                                                                                    <button type="button" class="btn btn-danger" onclick="removeStep(this)" style="margin-top: 0; margin-left: 10px;">
+                                                    <span class="icon">
+                                                        <i class="fas fa-trash"></i>
+                                                    </span>
+                                                </button>
+                                                    </div>
+                                                    <input type="hidden" name="RecipeSteps[${stepIndex}].StepNumber" value="${stepIndex + 1}" />
+                                                </div>`;
+            stepList.appendChild(newStep);
+            stepIndex++;
+        }
+
+        function removeStep(button) {
+            const stepItem = button.closest('.step-item');
+            const stepContainer = stepItem.parentElement;
+
+            stepItem.remove();
+
+            const stepItems = stepContainer.querySelectorAll('.step-item');
+
+
+            stepItems.forEach((item, index) => {
+                item.querySelector('.step-number').textContent = (index + 1) + '.';
+
+
+                const input = item.querySelector('input');
+                if (input) {
+                    input.name = `RecipeSteps[${index}].Description`;
+                }
+            });
+            stepIndex = stepItems.length;
+        }
+
+    </script>
+}

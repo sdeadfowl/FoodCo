@@ -1,0 +1,97 @@
+﻿.login-container {
+    margin-top: 5%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.title-text {
+    text-align: center;
+    font-weight: 300;
+    margin-bottom: 10%;
+}
+
+.title {
+    justify-content: center;
+    align-items: center;
+}
+
+.options {
+    justify-content: center;
+    align-items: center;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    text-align: center;
+}
+
+.options-text {
+    justify-content: center;
+    text-align: center;
+    font-weight: 300;
+    color: #737373;
+}
+
+    .options-text a {
+        color: black;
+    }
+
+.form-control {
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 4%;
+    color: #737373;
+    background-color: #DCDCDC;
+    stroke: transparent;
+    border: none;
+    padding-top: 5%;
+    padding-bottom: 5%;
+}
+
+.submit {
+    width: 100%;
+    padding-top: 5%;
+    padding-bottom: 5%;
+    color: white;
+    font-weight: 700;
+    background-color: #FF9A7A;
+}
+
+    .submit:hover {
+        background-color: #FF9A7A;
+        color: white;
+        transform: scale(1.05)
+    }
+
+.google-submit {
+    width: 100%;
+    padding-top: 5%;
+    padding-bottom: 5%;
+    color: black;
+    font-weight: 700;
+    background-color: white;
+    border: 1px solid #D1D1D1;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    font-weight: 500;
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=);
+    background-color: white;
+    background-repeat: no-repeat;
+    background-position: 18px 12px;
+    background-size: auto 28px;
+    text-align: end
+}
+
+    .google-submit:hover {
+        border: 1px solid #D1D1D1;
+        transform: scale(1.05)
+    }
+
+.text-danger {
+    padding-top: 2%;
+    color: #950000;
+    max-inline-size: 250px;
+}
+
+.remember-container {
+    margin-bottom: 4%;
+}

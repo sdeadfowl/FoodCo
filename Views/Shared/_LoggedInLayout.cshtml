@@ -1,0 +1,323 @@
+﻿@using FoodCo.Models;
+@using Microsoft.AspNet.Identity;
+@{
+
+    var _userId = Session["currentUserId"]?.ToString();
+    bool isAdmin = false;
+    ApplicationDbContext db = new ApplicationDbContext();
+    var admin = db.Admin;
+    
+        foreach (var userAdmin in admin)
+        {
+            if (userAdmin.UserId == _userId && userAdmin.IsAdmin == true)
+            {
+                isAdmin = true;
+            }
+        }
+  
+
+}
+@*<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>@ViewBag.Title - FoodCo</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+        @Styles.Render("~/Content/css")
+        @Scripts.Render("~/bundles/modernizr")
+
+        <script src="https://kit.fontawesome.com/8629bd9561.js" crossorigin="anonymous"></script>
+    </head>
+    <body>
+
+        <nav class="navbar navbar-expand-md navbar-toggleable-md navbar-dark bg-light">
+            <div class="container">
+                @Html.ActionLink("FoodCo", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse d-md-inline-flex justify-content-end">
+                    <ul class="navbar-nav">
+                        <li>@Html.ActionLink("Recettes", "Index", "Index", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li>@Html.ActionLink("À Propos", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                    </ul>
+                    @Html.Partial("_LoginPartial")
+                </div>
+            </div>
+        </nav>
+        <div class="container body-content">
+            <div class="main">
+                @Html.Partial("_SideBarPartial")
+                @RenderBody()
+            </div>
+        </div>
+
+        @Scripts.Render("~/bundles/jquery")
+        @Scripts.Render("~/bundles/bootstrap")
+        @RenderSection("scripts", required: false)
+        <script src="~/Content/UserDropdown.js"></script>
+    </body>
+    </html>*@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - FoodCo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    @Styles.Render("~/Content/app.css")
+    @Scripts.Render("~/bundles/modernizr")
+    <script>
+        function toggleDropdown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            var dropdown = event.currentTarget.parentElement;
+            dropdown.classList.toggle('show');
+        }
+
+        // Close the dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            var dropdowns = document.querySelectorAll('.main-nav-item.profile-dropdown.show');
+            dropdowns.forEach(function (dropdown) {
+                if (!dropdown.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        });
+
+
+    </script>
+    <script src="https://kit.fontawesome.com/8629bd9561.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="main-grid">
+        @*SIDE-NAV*@
+        <nav class="main-nav">
+            @*NAV-BRAND*@
+            @*<a class="logo" href="javascript: void(0)"><span class="icon"></span></a>*@
+            @*NAV-LIST*@
+            <ul class="main-nav-list">
+                <li class="main-nav-item"><a href="@Url.Action("Index", "Feed")" class="menu-item"><span class="icon"><i class="fas fa-home"></i></span><span class="text">Accueil</span></a></li>
+                @if (isAdmin == true)
+                {
+                    <li class="main-nav-item"><a href="@Url.Action("Index", "Admin")" class="menu-item"><span class="icon"><i class="fas fa-user-cog"></i></span><span class="text">Admin</span></a></li>
+                }
+                <li class="main-nav-item is-only-break1"><a href="@Url.Action("Index", "Search")" class="menu-item"><span class="icon"><i class="fas fa-search"></i></span><span class="text">Search</span></a></li>
+                <li class="main-nav-item is-hide-break1"><a class="menu-item"><span class="icon"><i class="fas fa-compass"></i></span><span class="text">Découvrir</span></a></li>
+                <li class="main-nav-item"><a href="@Url.Action("Notifications", "Account")" class="menu-item"><span class="icon notification-icon" id="NotificationsIcon"><i class="fas fa-bell"><span class="notification-bubble" id="notificationBubble"></span></i></span><span class="text">Notifications</span></a></li>
+                <li class="main-nav-item"><a href="@Url.Action("Index", "Chat")" class="menu-item"><span class="icon"><i class="fas fa-envelope"></i></span><span class="text">Messages</span></a></li>
+
+                @*Profile*@
+                @*<li class="main-nav-item is-hide-break1">
+            <a class="menu-item" href="">
+                <span class="icon"><img class="profile-image" src="@Url.Action("Photo", "Account")" alt=""></span>
+                <span class="text">Profil</span>
+            </a>
+        </li>*@
+                <li class="main-nav-item profile-dropdown">
+                    <a class="menu-item profile-dropdown-toggle" href="#" onclick="toggleDropdown(event)">
+                        <span class="icon">
+                            <img class="profile-image" src="@User.Identity.GetProfilePicturePath()" alt="Profile Image">
+                        </span>
+                        <span class="text">Profil</span>
+                    </a>
+                    <ul class="profile-dropdown-menu">
+                        <li class="profile-dropdown-item">
+                            <a href="@Url.Action("Profile", "Account",  new { username = User.Identity.Name})">Afficher Profil</a>
+                        </li>
+                        <li class="profile-dropdown-item">
+                            <a href="@Url.Action("Index", "Manage")">Modifier Profil</a>
+                        </li>
+                        <li class="profile-dropdown-item">
+                            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="profile-dropdown-link">Déconnecter</button>
+                            }
+                        </li>
+                    </ul>
+                </li>
+
+
+
+                <li class="main-nav-item is-hide-break1"><a class="menu-item"><span class="icon"><i class="fas fa-ellipsis-h"></i></span><span class="text">Plus</span></a></li>
+                @*PUBLISH BUTTON*@
+                <li class="main-nav-item foodco-button"><button class="common-button is-full-width is-height-big" onclick="window.location.href='@Url.Action("Create", "Recipe")'"><span class="icon"><i class="fas fa-pencil-alt"></i></span><span class="text">Recettes</span></button></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            @RenderBody()
+        </main>
+        @*------------------------------------------------------------END OF MAIN------------------------------------------------------------*@
+        <aside class="main-side">
+            <div class="main-side-searchbox">
+                <label class="search-box">
+                    <span class="icon"><i class="fa fa-search"></i></span>
+                    <input type="text" placeholder="Rechercher" onkeyup="searchUsers()" autocomplete="off" id="userSearch">
+                </label>
+                <div id="searchResults" class="search-results">
+
+                </div>
+            </div>
+
+            @*CATEGORY SECTION*@
+            <!--<section class="common-box">
+            <header class="common-box-header u-flex">
+                <h2 class="section-title">Catégorie pour vous</h2>-->
+            @*<button class="icon-button u-margin-start-auto"><span class="icon icon-settings">⚙️</span></button>*@
+            <!--</header>
+                <ul class="common-list">
+                    <li class="common-list-item">
+                        <a class="u-block u-common-padding">
+                            <div class="trend-category">BBQ</div>
+                            <h3 class="common-title">Porc éffiloché</h3>
+                            <p>105K Publications</p>
+                        </a>
+                        <button class="icon-button u-flex u-margin-start-auto"><span class="icon icon-arrow-down u-margin-auto"></span></button>
+                    </li>
+                    <li class="common-list-item">
+                        <a class="u-block u-common-padding">
+                            <div class="trend-category">Asiatique</div>
+                            <h3 class="common-title">Général Thao</h3>
+                            <p>21K foodcos</p>
+                        </a>
+                        <button class="icon-button u-flex u-margin-start-auto"><span class="icon icon-arrow-down u-margin-auto"></span></button>
+                    </li>
+                    <li class="common-list-item">
+                        <a class="u-block u-common-padding">
+                            <div class="trend-category">Italien</div>
+                            <h3 class="common-title">Arancini</h3>
+                            <p>251K foodcos</p>
+                        </a>
+                        <button class="icon-button u-flex u-margin-start-auto"><span class="icon icon-arrow-down u-margin-auto"></span></button>
+                    </li>
+                </ul>
+                <a class="common-more" href="/">Voir plus</a>
+            </section>-->
+            @*SUGGESTIONS SECTION*@
+            @*<section class="common-box">
+                    <header class="common-box-header u-flex">
+                        <h2 class="section-title">Suggestions</h2>
+                    </header>
+                    <ul class="common-list">
+                        <li class="common-list-item u-flex">
+                            <a class="user-item u-common-padding" href="" target="_blank">
+                                <img class="profile-image" src="https://images.tastet.ca/_/rs:fit:1080:720:false:0/plain/local:///2022/11/laurent-dagenais.jpg@jpg" alt="">
+                                <h3 class="common-title">Laurent Dagenais</h3>
+                                <span class="usercode">@@laurent.dagenais</span>
+                                <div class="common-button is-invert" tabindex="0" role="button"><span class="text">Suivre</span></div>
+                            </a>
+                        </li>
+                        <li class="common-list-item u-flex">
+                            <a class="user-item u-common-padding" href="" target="_blank">
+                                <img class="profile-image" src="https://www.vmcdn.ca/f/files/via/images/food/gordon-ramsay-burger.jpg" alt="">
+                                <h3 class="common-title">Gordon Ramsey</h3>
+                                <span class="usercode">@@gramsey</span>
+                                <div class="common-button is-invert" tabindex="0" role="button"><span class="text">Follow</span></div>
+                            </a>
+                        </li>
+                    </ul>
+                    <a class="common-more" href="/">Voir plus</a>
+                </section>*@
+        </aside>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+    <script>
+        $(function () {
+            let NotificationsDisabled = false; // On/Off
+
+            function checkNotifications() {
+                $.ajax({
+                    url: "/Account/UserHasNotifications",
+                    dataType: "text",
+                    success: (hasNotifications) => {
+                        console.log("Has notification:", JSON.parse(hasNotifications));
+                        if (JSON.parse(hasNotifications)) {
+                            $("#notificationBubble").addClass("blink-bubble blink").show();
+                        } else {
+                            $("#notificationBubble").removeClass("blink-bubble blink").hide();
+                        }
+                    },
+                    error: (err) => {
+                        console.error("Error fetching notifications:", err);
+                    }
+                });
+            }
+
+            if (!NotificationsDisabled) {
+                checkNotifications();
+                setInterval(checkNotifications, 10 * 1000);
+            }
+
+
+        });
+        document.addEventListener('click', function (event) {
+            let resultsContainer = document.getElementById('searchResults');
+            let searchInput = document.getElementById('userSearch');
+
+
+            if (!resultsContainer.contains(event.target) && !searchInput.contains(event.target)) {
+                resultsContainer.style.display = 'none';
+            }
+        });
+        function searchUsers() {
+            let query = document.getElementById('userSearch').value.trim();
+            let resultsContainer = document.getElementById('searchResults');
+
+            if (query.length === 0) {
+                resultsContainer.innerHTML = '';
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            else {
+                resultsContainer.style.display = 'flex';
+            }
+
+            fetch(`/Account/SearchUsers?query=${encodeURIComponent(query)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.status);
+                    }
+                    return response.json();
+                })
+                .then(users => {
+                    if (Array.isArray(users) && users.length > 0) {
+                        let results = users.map(user => `
+                            <a href="/Account/Profile?username=${user.Username}">
+                                    <div class="search-results-card pointer">
+                                    <img src="${user.ProfilePicture}" alt="${user.Username}" class="UserMediumAvatar" />
+                                        <div class="search-results-content">
+                                            <p><strong>@@${user.Username}</strong></p>
+                                        </div>
+                                    </div>
+                            </a>
+
+
+
+                            `).join('');
+                        resultsContainer.innerHTML = results;
+                    } else {
+                        resultsContainer.innerHTML = (
+                            '<p><strong>Aucun résultat</strong></p>');
+                    }
+                })
+                .catch(error => {
+                    resultsContainer.innerHTML = '<p><strong>Une erreur est survenue</strong></p>';
+                });
+        }
+
+    </script>
+
+</body>
+</html>
+

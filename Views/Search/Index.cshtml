@@ -1,0 +1,53 @@
+﻿@{
+    ViewBag.Title = "Recherche";
+    Layout = "~/Views/Shared/_LoggedInLayout.cshtml";
+}
+
+<header class="main-header">
+    <button class="icon-button icon fa fa-arrow-left" onclick="window.history.back()"><span class="icon"></span></button>
+    <div class="main-header-content">
+        <h1 class="section-title">@ViewBag.Title</h1>
+    </div>
+    <button class="icon-button u-margin-start-auto" aria-label="Top foodcos on"><span class="icon">✨</span></button>
+</header>
+
+<div class="search-container">
+    <div class="main-side-searchbox">
+        <label class="search-box">
+            <span class="icon"><i class="fa fa-search"></i></span>
+            <input type="text" placeholder="Rechercher" onkeyup="searchUsers()" autocomplete="off" id="userSearch">
+        </label>
+        <div id="searchResults" class="search-results">
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+
+        window.addEventListener('DOMContentLoaded', (event) => {
+
+            const style = document.createElement('style');
+            style.innerHTML = `
+
+                    @@media (min-width: 1005px) {
+                        .main-grid {
+                            grid-template-columns: auto 60vw;
+                            padding: 0 10px;
+                            box-sizing: content-box;
+                        }
+                    }
+
+                    .main-side{
+                        display: none !important;
+                    }
+
+                `;
+            document.head.appendChild(style);
+
+        });
+    </script>
+}
