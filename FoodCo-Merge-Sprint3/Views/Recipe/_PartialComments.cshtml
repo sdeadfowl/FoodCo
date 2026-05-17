@@ -1,0 +1,148 @@
+﻿@model List<RecipeComment>
+@using Microsoft.AspNet.Identity;
+
+@Styles.Render("~/Content/Site.css")
+@{
+    var _userId = Session["currentUserId"]?.ToString();
+    Layout = null;
+}
+
+
+@foreach (var item in Model)
+{
+    var words = item.Text.Split(' ');
+    var formattedText = "";
+
+    foreach (var word in words)
+    {
+        if (word.StartsWith("@"))
+        {
+            var mentionLink = Url.Action("Profile", "Account", new { username = word.TrimStart('@') });
+            formattedText += $"<a href='{mentionLink}' class='mention'>{word}</a> ";
+        }
+        else
+        {
+            formattedText += word + " ";
+        }
+    }
+
+    <ul class="comment-list" id="comment-list">
+        <li class="feed-item ">
+            <article class="foodco-item">
+                <img class="profile-image" src="@item.User.ProfilePicturePath" />
+                <header class="foodco-item-info u-flex">
+                    <a class="foodco-item-info-user">
+                        <span class="common-title">@item.User.Name</span>
+                        <span class="usercode">@item.User.UserName.ToLower()</span>
+                    </a>
+                    <time datetime="@item.Date.ToString("yyyy/MM/dd")">
+                        @item.Date.ToString("MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture)
+                    </time>
+                    <button class="icon-button u-flex u-left-margin-auto" style="--icon-button-size:27px;">
+                        <span class="icon icon-arrow-down u-margin-auto"></span>
+                    </button>
+                </header>
+
+                <p>@Html.Raw(formattedText)</p>
+            </article>
+            <div id="reviewsModal" class="modal">
+            </div>
+        </li>
+    </ul>
+
+    <!--<ul class="comment-list" id="comment-list">
+        <li class="feed-item pointer">
+
+            <article class="foodco-item">
+                <img class="profile-image" src="@item.User.ProfilePicturePath">
+                <header class="foodco-item-info u-flex">
+                    <a class="foodco-item-info-user">
+                        <span class="common-title">@item.User.Name</span>
+                        <span class="usercode">@item.User.UserName.ToLower()</span>
+                    </a>
+                    <time datetime="@item.Date.ToString("yyyy/MM/dd")">
+                        @item.Date.ToString("MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture)
+                    </time>
+
+
+
+                    <button class="icon-button u-flex u-left-margin-auto" style="--icon-button-size:27px;"><span class="icon icon-arrow-down u-margin-auto"></span></button>
+
+                </header>
+                <p>@item.Text</p>
+                <ul class="message-options u-flex u-space-between">
+                    <li class="message-options-item" style="justify-content: flex-start;">
+                        <label>
+                            <button class="icon-button comment" onclick="event.stopPropagation(); toggleCommentBox('@item.Id', 'recipe');"><span class="icon fa-regular fa-comment"></span></button>
+                            <span class="text"></span>
+                        </label>
+
+                    </li>
+
+
+                    <li class="message-options-item">
+                        <label>
+                            <button class="icon-button" onclick="event.stopPropagation();"><span class="icon">🔗</span></button>
+                            <span class="text"></span>
+                        </label>
+                    </li>
+                </ul>
+            </article>-->
+
+            @* Boîte de commentaires *@
+
+
+
+            @*<div style="margin-bottom:15%;" id="commentContainer">
+            PARTIAL COMMENT
+            </div>*@
+
+            
+        <!--</li>
+    </ul>-->
+
+
+}
+<br />
+@*@foreach (var item in Model)
+{
+    var words = item.Text.Split(' ');
+    var formattedText = "";
+
+    foreach (var word in words)
+    {
+        if (word.StartsWith("@"))
+        {
+            var mentionLink = Url.Action("Profile", "Account", new { username = word.TrimStart('@') });
+            formattedText += $"<a href='{mentionLink}' class='mention'>{word}</a> ";
+        }
+        else
+        {
+            formattedText += word + " ";
+        }
+    }
+
+    <ul class="comment-list" id="comment-list">
+        <li class="feed-item ">
+            <article class="foodco-item">
+                <img class="profile-image" src="@item.User.ProfilePicturePath" />
+                <header class="foodco-item-info u-flex">
+                    <a class="foodco-item-info-user">
+                        <span class="common-title">@item.User.Name</span>
+                        <span class="usercode">@item.User.UserName.ToLower()</span>
+                    </a>
+                    <time datetime="@item.Date.ToString("yyyy/MM/dd")">
+                        @item.Date.ToString("MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture)
+                    </time>
+                    <button class="icon-button u-flex u-left-margin-auto" style="--icon-button-size:27px;">
+                        <span class="icon icon-arrow-down u-margin-auto"></span>
+                    </button>
+                </header>
+
+                <p>@Html.Raw(formattedText)</p>
+            </article>
+        </li>
+    </ul>
+}
+
+<br />*@

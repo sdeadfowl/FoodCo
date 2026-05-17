@@ -1,0 +1,508 @@
+﻿@using FoodCo.Models
+
+
+@{
+    ApplicationDbContext db = new ApplicationDbContext();
+    var _userId = Session["currentUserId"]?.ToString();
+    var admin = db.Admin;
+    var isAdmin = false;
+
+    foreach (var userAdmin in admin)
+    {
+        if (userAdmin.UserId == _userId && userAdmin.IsAdmin == true)
+        {
+            isAdmin = true;
+        }
+    }
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LoggedInLayout.cshtml";
+    @model Tuple<IEnumerable<FoodCo.Models.Post>, FoodCo.Models.Post>
+}
+
+
+@if (!isAdmin)
+{
+
+    @*HEADER*@
+    @*----------------------------------------------------------START OF MAIN------------------------------------------------------------*@
+    <header class="main-header">
+        <button class="icon-button icon-back u-hide"><span class="icon">←</span></button>
+        <div class="main-header-content">
+            <h1 class="section-title">FoodCo</h1>
+        </div>
+        <button class="icon-button u-margin-start-auto" aria-label="Top foodcos on"><span class="icon">✨</span></button>
+    </header>
+
+    @*PUBLICATION BOX*@
+    using (Html.BeginForm("Create", "Post", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <section class="message-box">
+            <div class="profile-image-wrap">
+                <img class="profile-image" src="@User.Identity.GetProfilePicturePath()" alt="">
+            </div>
+            <div class="message-box-content">
+                @Html.TextAreaFor(p => p.Item2.Text, new { @id = "postText", @class = "message-box-text-area", @placeholder = "Quoi de neuf ?" })
+                <button type="button" id="remove-preview" class="remove-preview-button u-hide">&times;</button>
+                <img id="preview-content" class="content-image" src="" alt="">
+                <div class="char-counter">250 caractères restants</div>
+                <p class="message-alert" id="message-alert"></p>
+            </div>
+            <nav class="message-box-nav u-flex">
+                <ul class="u-flex">
+                    <li>
+                        <button type="button" class="icon-button" onclick="document.getElementById('file-upload').click();">
+                            <span class="icon"><i class="fas fa-upload"></i></span>
+                        </button>
+                        <input type="file" id="file-upload" style="display: none;" />
+                    </li>
+                </ul>
+                <button type="button" class="common-button u-margin-start-auto" onclick="submitPost()"><span class="text">Publier</span></button>
+            </nav>
+        </section>
+    }
+
+
+
+    @*FEED*@
+    <div id="feedContainer">
+        @*@Html.Partial("_PartialFeed", Model)*@
+    </div>
+    <div id="loading" class="loading-indicator" style="display:none;">
+        Loading more posts...
+    </div>
+}
+
+@if (isAdmin)
+{
+    @*ADMIN!!!!!*@
+    <header class="main-header">
+        <button class="icon-button icon-back u-hide"><span class="icon">←</span></button>
+        <div class="main-header-content">
+            <h1 class="section-title">FoodCo</h1>
+        </div>
+        <button class="icon-button u-margin-start-auto" aria-label="Top foodcos on"><span class="icon">✨</span></button>
+    </header>
+
+    @*PUBLICATION BOX*@
+    using (Html.BeginForm("Create", "Post", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <section class="message-box">
+            <div class="profile-image-wrap">
+                <img class="profile-image" src="@User.Identity.GetProfilePicturePath()" alt="">
+            </div>
+            <div class="message-box-content">
+                @Html.TextAreaFor(p => p.Item2.Text, new { @id = "postText", @class = "message-box-text-area", @placeholder = "Quoi de neuf ?" })
+                <button type="button" id="remove-preview" class="remove-preview-button u-hide">&times;</button>
+                <img id="preview-content" class="content-image" src="" alt="">
+                <div class="char-counter">250 caractères restants</div>
+                <p class="message-alert" id="message-alert"></p>
+            </div>
+            <nav class="message-box-nav u-flex">
+                <ul class="u-flex">
+                    <li>
+                        <button type="button" class="icon-button" onclick="document.getElementById('file-upload').click();">
+                            <span class="icon"><i class="fas fa-upload"></i></span>
+                        </button>
+                        <input type="file" id="file-upload" style="display: none;" />
+                    </li>
+                </ul>
+                <button type="button" class="common-button u-margin-start-auto" onclick="submitPost()"><span class="text">Publier</span></button>
+            </nav>
+        </section>
+    }
+
+
+
+    @*FEED*@
+    <div id="feedContainer">
+        @*@Html.Partial("_PartialFeed", Model)*@
+    </div>
+    <div id="loading" class="loading-indicator" style="display:none;">
+        Loading more posts...
+    </div>
+}
+
+
+@section Scripts
+{
+    <script>
+        let feedPanelUpdater = new PartialRefresh("@Url.Action("_PartialFeed")", "feedContainer", 30000);
+        function deletePost(postId) {
+    if (!confirm('Are you sure you want to delete this post?')) {
+        return;
+    }
+
+    $.ajax({
+        url: '@Url.Action("Delete", "Post")',
+        type: 'POST',
+        data: { id: postId },
+        success: function(response) {
+            if (response.success) {
+                alert('Post deleted successfully.');
+                window.location.reload();
+            } else {
+                alert('Error: ' + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Failed to delete post:', error);
+            alert('An error occurred. Please try again later.');
+        }
+    });
+    $.ajax({
+    url: '@Url.Action("Delete", "Recipe")',
+    type: 'POST',
+    data: { id: postId },
+    success: function(response) {
+        if (response.success) {
+            alert('Post deleted successfully.');
+            window.location.reload();
+        } else {
+            alert('Error: ' + response.message);
+        }
+    },
+    error: function(xhr, status, error) {
+        console.error('Failed to delete post:', error);
+        alert('An error occurred. Please try again later.');
+    }
+});
+}
+
+        function submitPost() {
+            var formData = new FormData();
+
+            var tokenElement = document.getElementsByName('__RequestVerificationToken')[0];
+            var tokenValue = tokenElement ? tokenElement.value : '';
+            formData.append('__RequestVerificationToken', tokenValue)
+
+            var postText = document.getElementById('postText').value.trim();
+            var alertBox = document.getElementById('message-alert');
+            if (!postText) {
+
+                alertBox.textContent = ('Veuillez entrez du texte.');
+                return;
+            }
+
+            formData.append('Text', postText);
+            var fileInput = document.getElementById('file-upload');
+            if (fileInput.files.length > 0) {
+                formData.append('Content', fileInput.files[0]);
+            }
+
+            $.ajax({
+                url: '@Url.Action("Create", "Post")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        feedPanelUpdater.refresh()
+
+                        document.getElementById('postText').value = '';
+                        fileInput.value = '';
+                        document.getElementById('preview-content').src = '';
+                        document.getElementById('preview-content').style.display = 'none';
+                        document.getElementById('remove-preview').classList.add('u-hide');
+                    } else {
+                        alertBox.textContent = ('Une erreur est survenue lors du traitement de votre demande.');
+                    }
+                },
+                error: function (response) {
+                    alertBox.textContent = ('Une erreur est survenue lors du traitement de votre demande.');
+                }
+            });
+        }
+        function AddRecipeToBook(id) {
+
+            let data = {
+                recipeId: id
+            };
+
+            let url = '@Url.Action("AddRecipeToBook", "Recipe")';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: data,
+                success: function(response) {
+                    if (response.success) {
+                        feedPanelUpdater.refresh();
+                    } else {
+                        alert('Une erreur est survenue. Veuillez réessayer.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erreur lors de l\'ajout de la recette aux favoris :', error);
+                }
+            });
+        }
+        function RemoveRecipeFromBook(id) {
+
+            let data = {
+                recipeId: id
+            };
+
+            let url = '@Url.Action("RemoveRecipeFromBook", "Recipe")';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: data,
+                success: function(response) {
+                    if (response.success) {
+                        feedPanelUpdater.refresh();
+                    } else {
+                        alert('Une erreur est survenue. Veuillez réessayer.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erreur lors de l\'ajout de la recette aux favoris :', error);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var fileUpload = document.getElementById('file-upload');
+            var previewContent = document.getElementById('preview-content');
+            var removePreviewButton = document.getElementById('remove-preview');
+
+            fileUpload.addEventListener('change', function () {
+                var file = fileUpload.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewContent.src = e.target.result;
+                        previewContent.style.display = 'block';
+                        removePreviewButton.style.display = 'block';
+                        removePreviewButton.classList.remove('u-hide');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            removePreviewButton.addEventListener('click', function () {
+                previewContent.src = '';
+                previewContent.style.display = 'none';
+                removePreviewButton.classList.add('u-hide');
+                fileUpload.value = '';
+            });
+        });
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var msgBox = document.querySelector('.message-box-text-area');
+                var charCounter = document.querySelector('.char-counter');
+                var messageAlert = document.getElementById('message-alert');
+                var maxLength = 250;
+
+                msgBox.addEventListener('input', function () {
+                    var text = msgBox.value;
+
+                    if (text.length > maxLength) {
+                        msgBox.value = text.slice(0, maxLength);
+
+                        placeCursorAtEnd(msgBox);
+
+                        messageAlert.textContent = 'La limite de 250 caractères a été atteinte.';
+                    } else {
+                        messageAlert.textContent = '';
+                    }
+
+                    var remainingChars = maxLength - msgBox.value.length;
+                    charCounter.textContent = remainingChars + ' caractères restants';
+                });
+
+                function placeCursorAtEnd(element) {
+                    var valueLength = element.value.length;
+                    element.setSelectionRange(valueLength, valueLength);
+                    element.focus();
+                }
+            });
+
+            let page = 1;
+            const pageSize = 10;
+            let loading = false;
+            let noMorePosts = false;
+
+            function loadMorePosts() {
+                if (loading || noMorePosts) return;
+
+                loading = true;
+                const feedList = document.getElementById('feed-list');
+
+                const spinner = document.createElement('li');
+                spinner.className = 'feed-item loading';
+                spinner.innerHTML = '<div class="spinner"></div>';
+                feedList.appendChild(spinner);
+
+                fetch(`/Feed/_PartialFeed?page=${page + 1}&pageSize=${pageSize}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Unable to load posts at the moment.');
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        feedList.removeChild(spinner);
+
+                        if (html.trim() === '') {
+                            noMorePosts = true;
+                        } else {
+                            feedList.insertAdjacentHTML('beforeend', html);
+                            loading = false;
+                            page++;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                        feedList.removeChild(spinner);
+                        loading = false;
+                    });
+            }
+
+            let throttleTimeout = null;
+            window.addEventListener('scroll', () => {
+                if (throttleTimeout) clearTimeout(throttleTimeout);
+
+                throttleTimeout = setTimeout(() => {
+                    console.log('Inner: ' + window.innerHeight + '| scrollY: ' + window.scrollY + ' | Document height: ' + document.documentElement.scrollHeight)
+                    if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight) {
+                        loadMorePosts();
+                    }
+                }, 800); // Delay ms
+            });
+
+        function togglePostLike(postId) {
+                const likeButton = document.getElementById(`like-btn-${postId}`);
+                const likeText = document.getElementById(`like-text-${postId}`);
+                const likesCountSpan = likeButton.nextElementSibling;
+
+                $.ajax({
+                    url: '@Url.Action("ToggleLike", "Post")',
+                    type: 'POST',
+                    data: { postId: postId },
+                    success: function(response) {
+                        if (response.success) {
+                            likeText.classList.toggle('liked');
+                            likeText.classList.remove('fa-regular')
+                            likeText.classList.add('fa-solid')
+                            likesCountSpan.innerText = response.likesCount;
+                        } else {
+                            likeText.classList.toggle('liked');
+                            likeText.classList.remove('fa-solid')
+                            likeText.classList.add('fa-regular')
+                            likesCountSpan.innerText = response.likesCount;
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(`Failed to toggle like. Try again later.`);
+                    }
+                });
+             }
+        function toggleRecipeLike(recipeId) {
+                const likeButton = document.getElementById(`like-btn-${recipeId}`);
+                const likeText = document.getElementById(`like-text-${recipeId}`);
+                const likesCountSpan = likeButton.nextElementSibling;
+
+                $.ajax({
+                    url: '@Url.Action("ToggleLike", "Recipe")',
+                    type: 'POST',
+                    data: { recipeId: recipeId },
+                    success: function(response) {
+                        if (response.success) {
+                            likeText.classList.toggle('liked');
+                            likeText.classList.remove('fa-regular')
+                            likeText.classList.add('fa-solid')
+                            likesCountSpan.innerText = response.likesCount;
+                        } else {
+                            likeText.classList.toggle('liked');
+                            likeText.classList.remove('fa-solid')
+                            likeText.classList.add('fa-regular')
+                            likesCountSpan.innerText = response.likesCount;
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(`Failed to toggle like. Try again later.`);
+                    }
+                });
+            }
+        function toggleCommentBox(id, type) {
+            const commentBox = document.getElementById(`comment-box-${id}`);
+            if (commentBox.classList.contains('u-hide')) {
+                commentBox.classList.remove('u-hide');
+            } else {
+                commentBox.classList.add('u-hide');
+            }
+        }
+
+        function submitComment(id, type) {
+            const commentText = document.getElementById(`commentText-${id}`).value.trim();
+            if (!commentText) {
+                alert('Veuillez entrer un commentaire.');
+                return;
+            }
+
+            let data = {
+             comment: commentText
+            };
+
+            let url = '';
+             if (type === 'recipe') {
+                data.recipeId = id;
+                 url = '@Url.Action("AddComment", "Recipe")';
+            } else if (type === 'post') {
+                data.postId = id;
+             url = '@Url.Action("AddComment", "Post")';
+            }
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: data,
+                success: function(response) {
+                    if (response.success) {
+                        alert('Commentaire ajouté avec succès !');
+                        document.getElementById(`commentText-${id}`).value = '';
+                        toggleCommentBox(id, type);
+                    } else {
+                        alert('Une erreur est survenue. Veuillez réessayer.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erreur lors de l\'ajout du commentaire :', error);
+                }
+            });
+        }
+
+        function toggleFeedItemDropdown(button) {
+            var dropdown = button.nextElementSibling;
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+
+            document.addEventListener('click', function (event) {
+                if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        }
+
+        function CopierLienPublication(postId, isRecipe) {
+
+            //mettre un id au lien de la publication pour pouvoir copier le lien et ensuite l'envoyer
+            var ShareButton = document.getElementById(`share - btn - ${postId}`);
+            var ShareText = document.getElementById(`share - txt - ${postId}`);
+
+            if (isRecipe) {
+                alert(`https://localhost:44378/Recipe/Details/${postId}`)
+                navigator.clipboard.writeText(`https://localhost:44378/Recipe/Details/${postId}`);
+            }
+            else
+            {
+                alert(`https://localhost:44378/Post/Details/${postId}`)
+                navigator.clipboard.writeText(`https://localhost:44378/Post/Details/${postId}`);
+            }
+            alert("Lien de publication copier" + ShareText.value);
+        }
+    </script>
+}

@@ -1,0 +1,177 @@
+﻿@model FoodCo.Models.Post
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LoggedInLayout.cshtml";
+
+
+}
+
+<header class="main-header">
+    <button class="icon-button icon fa fa-arrow-left" onclick="window.history.back()"><span class="icon"></span></button>
+    <div class="main-header-content">
+        <h1 class="section-title">@ViewBag.Title</h1>
+    </div>
+    <button class="icon-button u-margin-start-auto" aria-label="Top foodcos on"><span class="icon">✨</span></button>
+</header>
+<br />
+<div class="recipe-form-container">
+    <section class="recipe-form">
+        @using (Html.BeginForm("Edit", "Post", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            <section class="message-box">
+                <div class="profile-image-wrap">
+                    <img class="profile-image" src="@Url.Action("Photo", "Account")" alt="">
+                </div>
+                <div class="message-box-content">
+                    @Html.TextAreaFor(p => p.Text, new { @id = "postText", @class = "message-box-text-area", @placeholder = "Quoi de neuf ?" })
+                    <button type="button" id="remove-preview" class="remove-preview-button u-hide">&times;</button>
+                    <img id="preview-content" class="content-image" src="" alt="">
+                    <div class="char-counter">250 caractères restants</div>
+                    <p class="message-alert" id="message-alert"></p>
+                </div>
+                <nav class="message-box-nav u-flex">
+                    <ul class="u-flex">
+                        <li>
+                            <button type="button" class="icon-button" onclick="document.getElementById('file-upload').click();">
+                                <span class="icon"><i class="fas fa-upload"></i></span>
+                            </button>
+                            <input type="file" id="file-upload" style="display: none;" />
+                        </li>
+                    </ul>
+                    @*<button type="button" class="common-button u-margin-start-auto" onclick="modifyPost()"><span class="text">Modifier</span></button>*@
+                    <input type="submit" value="Modifier" class="common-button u-margin-start-auto" style="border:0px"/>
+                </nav>
+            </section>
+        }
+    </section>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+<script>
+
+
+
+        @*function modifyPost() {
+        var formData = new FormData();
+
+        var tokenElement = document.getElementsByName('__RequestVerificationToken')[0];
+        var tokenValue = tokenElement ? tokenElement.value : '';
+        formData.append('__RequestVerificationToken', tokenValue)
+
+        var postText = document.getElementById('postText').value.trim();
+        var alertBox = document.getElementById('message-alert');
+        if (!postText) {
+            alertBox.textContent = 'Veuillez entrer du texte.';
+            return;
+        }
+
+        formData.append('Text', postText);
+        var fileInput = document.getElementById('file-upload');
+        if (fileInput.files.length > 0) {
+            formData.append('Content', fileInput.files[0]);
+        }
+
+    $.ajax({
+        url: '@Url.Action("Edit", "Post")',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            if (response.success) {
+                //feedPanelUpdater.refresh();
+                document.getElementById('postText').value = '';
+                fileInput.value = '';
+                document.getElementById('preview-content').src = '';
+                document.getElementById('preview-content').style.display = 'none';
+                document.getElementById('remove-preview').classList.add('u-hide');
+                //alertBox.textContent = 'Post modifié avec succès.';
+                window.location.href = response.redirectUrl;
+
+              
+            } else {
+                alertBox.textContent = response.message || 'Une erreur est survenue lors du traitement de votre demande.';
+            }
+        },
+        error: function (response) {
+            alertBox.textContent = 'Une erreur est survenue lors du traitement de votre demande.';
+        }
+    });*@
+}
+        document.addEventListener('DOMContentLoaded', function () {
+            var fileUpload = document.getElementById('file-upload');
+            var previewContent = document.getElementById('preview-content');
+            var removePreviewButton = document.getElementById('remove-preview');
+
+            fileUpload.addEventListener('change', function () {
+                var file = fileUpload.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewContent.src = e.target.result;
+                        previewContent.style.display = 'block';
+                        removePreviewButton.style.display = 'block';
+                        removePreviewButton.classList.remove('u-hide');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            removePreviewButton.addEventListener('click', function () {
+                previewContent.src = '';
+                previewContent.style.display = 'none';
+                removePreviewButton.classList.add('u-hide');
+                fileUpload.value = '';
+            });
+        });
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var msgBox = document.querySelector('.message-box-text-area');
+                var charCounter = document.querySelector('.char-counter');
+                var messageAlert = document.getElementById('message-alert');
+                var maxLength = 250;
+
+                msgBox.addEventListener('input', function () {
+                    var text = msgBox.value;
+
+                    if (text.length > maxLength) {
+                        msgBox.value = text.slice(0, maxLength);
+
+                        placeCursorAtEnd(msgBox);
+
+                        messageAlert.textContent = 'La limite de 250 caractères a été atteinte.';
+                    } else {
+                        messageAlert.textContent = '';
+                    }
+
+                    var remainingChars = maxLength - msgBox.value.length;
+                    charCounter.textContent = remainingChars + ' caractères restants';
+                });
+
+                function placeCursorAtEnd(element) {
+                    var valueLength = element.value.length;
+                    element.setSelectionRange(valueLength, valueLength);
+                    element.focus();
+                }
+            });
+
+        function CopierLienPublication(postId, isRecipe) {
+
+            //mettre un id au lien de la publication pour pouvoir copier le lien et ensuite l'envoyer
+            var ShareButton = document.getElementById(`share - btn - ${postId}`);
+            var ShareText = document.getElementById(`share - txt - ${postId}`);
+            if (isRecipe) {
+                navigator.clipboard.writeText(`https://localhost:44378/Recipe/Details/${postId}`);
+            }
+            else
+            {
+                navigator.clipboard.writeText(`https://localhost:44378/Post/Details/${postId}`);
+            }
+            alert("Lien de publication copier" + ShareText.value);
+        }
+    </script>
+
+}

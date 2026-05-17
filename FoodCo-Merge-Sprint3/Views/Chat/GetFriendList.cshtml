@@ -1,0 +1,24 @@
+@{
+    Layout = null;
+}
+<div style="display:grid; grid-template-columns:65px auto; column-gap:10px;">
+    <div class="chat-list-container" id="chat-list-container"
+         title="Cliquez sur un de vos amis pour clavarder avec lui..."> </div>
+    <div>
+        <div class="chat-panel" id="chat-panel" title="Cliquez sur un de vos messages pour l'éditer..."></div>
+        <div class="chat-input-container" id="sendMessagePanel">
+            <input id="message"
+                   type="text"
+                   class="form-control"
+                   style="width:100% !important; max-width:1000px !important;"
+                   placeholder="Tapez votre message ici ..."
+                   title="Les urls d'image sont prises en compte." />
+            <span id="send"
+                  class="icon fa fa-paper-plane pointer"
+                  title="Envoyer"
+                  data-placement="bottom">
+            </span>
+
+        </div>
+    </div>
+</div>
